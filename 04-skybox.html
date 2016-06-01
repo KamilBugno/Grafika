@@ -28,7 +28,7 @@
 <link rel=stylesheet href="jquery-ui.css" />
 <link rel=stylesheet href="info.css"/>
 <script src="info.js"></script>
-<div id="infoButton"></div>
+
 <div id="infoBox" title="Demo Information">
 This three.js demo is part of a collection at
 <a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
@@ -66,7 +66,7 @@ function init()
 	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
-	camera.position.set(-300,450,600);
+	camera.position.set(-400,550,700);
 	camera.lookAt(scene.position);	
 	// RENDERER
 	if ( Detector.webgl )
@@ -111,8 +111,8 @@ function init()
             });
 
             mesh = geometry;
-            geometry.scale.set(10, 10, 10);
-            geometry.rotation.x = -0.3;
+            geometry.scale.set(2, 2, 2);
+            geometry.rotation.x = -0.0;
 			geometryS = geometry;
             scene.add(geometry);
 	
@@ -128,7 +128,7 @@ function init()
 	var imagePrefix = "textures/dawnmountain-";
 	var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
 	var imageSuffix = ".png";
-	var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );	
+	var skyGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );	
 	
 	var materialArray = [];
 	for (var i = 0; i < 6; i++)
@@ -151,6 +151,7 @@ function animate()
 
 function update()
 {
+	geometryS.rotation.z = 0;
 	delta = clock.getDelta(); 
 	var moveDistance = 100 * delta;
 	walking = false;
@@ -183,25 +184,42 @@ function update()
 	}
 	
 	// move forwards / backwards
-	if ( keyboard.pressed("down") )
-		geometryS.translateZ( -moveDistance );
-	if ( keyboard.pressed("up") )
+	if ( keyboard.pressed("a") ){
+		geometryS.rotation.x =0;
+		geometryS.rotation.z =0;
 		geometryS.translateZ(  moveDistance );
-	// rotate left/right
-	if ( keyboard.pressed("left") )
-		geometryS.rotation.y += delta;
-	if ( keyboard.pressed("right") )
-		geometryS.rotation.y -= delta;
-	
-	
-	var walkingKeys = ["up", "down", "left", "right"];
-	for (var i = 0; i < walkingKeys.length; i++)
-	{
-		if ( keyboard.pressed(walkingKeys[i]) )
-			walking = true;
 	}
 	
 	
+	if ( keyboard.pressed("down") ){
+		geometryS.rotation.x +=0.3
+		geometryS.rotation.z = 0;
+		geometryS.translateZ(  moveDistance );
+		
+	}
+	if ( keyboard.pressed("up") ){
+		geometryS.rotation.x -=0.3
+		geometryS.rotation.z = 0;
+		geometryS.translateZ(  moveDistance );
+	}
+	// rotate left/right
+	if ( keyboard.pressed("left") ){
+		geometryS.rotation.y += delta;
+		geometryS.rotation.z -= 2*delta;
+		geometryS.translateZ(  moveDistance );
+		geometryS.rotation.x =0;
+	}
+		
+	if ( keyboard.pressed("right") ){
+		geometryS.rotation.y -= delta;
+		geometryS.rotation.z += 2*delta;
+		geometryS.translateZ(  moveDistance );
+		geometryS.rotation.x =0;
+	}
+		
+	
+	
+	geometryS.translateZ(  moveDistance/10 );
 	controls.update();
 	stats.update();
 }
