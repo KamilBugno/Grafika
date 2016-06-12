@@ -46,12 +46,13 @@ This three.js demo is part of a collection at
 // MAIN
 
 // standard global variables
-var container, scene, camera, camera2, currentcamera, renderer, controls, stats;
+var container, scene, camera, camera2, camera3, currentcamera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 // custom global variables
 var cube;
 var geometryS;
+var plane;
 
 init();
 animate();
@@ -61,13 +62,29 @@ function init()
 {
 	// SCENE
 	scene = new THREE.Scene();
+	
+	
+	
+	var img = new THREE.MeshBasicMaterial({ //CHANGED to MeshBasicMaterial
+        map:THREE.ImageUtils.loadTexture('pilot1.png'),
+		transparent: true
+    });
+    img.map.needsUpdate = true; //ADDED
+
+    // plane
+    plane = new THREE.Mesh(new THREE.PlaneGeometry(40, 20),img);
+    //scene.add(plane);
+	
+	
 	// CAMERA
 	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
 	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	
 	scene.add(camera);
 	camera.position.set(-400,550,700);
 	camera.lookAt(scene.position);	
+	
 	currentcamera = camera;
 	// RENDERER
 	if ( Detector.webgl )
@@ -117,6 +134,9 @@ function init()
 			geometryS = geometry;
             scene.add(geometry);
 			
+			
+			
+			
 			//camera.position.set(0, 0, -100);
 			//geometryS.add( camera );
 			var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
@@ -125,11 +145,21 @@ function init()
 			camera2.position.set(0, 0, -100);
 			geometryS.add( camera2 );
 			
-	
+			
+			camera3 = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+			geometryS.add(camera3);
+			camera3.position.set(0, 0, -100);
+			plane.position.set( 0, 0, -20);
+			
+			
 		});
+		
+		
 	
 	
-	
+	 
+
+    
 	
 	// SKYBOX
 	var axes = new THREE.AxisHelper(100);
@@ -195,6 +225,7 @@ function update()
 	
 	// move forwards / backwards
 	if ( keyboard.pressed("a") ){
+		camera3.remove(plane);
 		console.log("a");
 	//	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
 	//	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
@@ -215,7 +246,7 @@ function update()
 	
 	if ( keyboard.pressed("s") ){
 		console.log("s");
-		
+		camera3.remove(plane);
 		currentcamera = camera2;
 		// EVENTS
 		THREEx.WindowResize(renderer, currentcamera);
@@ -225,6 +256,20 @@ function update()
 		geometryS.rotation.x =0;
 		geometryS.rotation.z =0;
 		geometryS.translateZ(  moveDistance );
+	}
+	
+	if ( keyboard.pressed("d") ){
+		console.log("d");
+		
+		
+		camera3.add(plane);
+		currentcamera = camera3;
+		// EVENTS
+		THREEx.WindowResize(renderer, currentcamera);
+		THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+		// CONTROLS
+		controls = new THREE.OrbitControls( currentcamera, renderer.domElement );
+		
 	}
 	
 	
