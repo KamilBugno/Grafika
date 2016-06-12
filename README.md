@@ -7,3 +7,4 @@ Sterowanie:
 - strzalka w gore/dol -> opadanie/wznoszenie samolotu
 - przycisk "a" -> kamera calej sceny
 - przycisk "s" -> kamera zwiazana z samolotem
+- przycisk "d" -> kamera z kabiny pilotow
