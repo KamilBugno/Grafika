@@ -53,6 +53,8 @@ var clock = new THREE.Clock();
 var cube;
 var geometryS;
 var plane;
+var speed;
+var planeRoll;
 
 init();
 animate();
@@ -62,7 +64,8 @@ function init()
 {
 	// SCENE
 	scene = new THREE.Scene();
-	
+	speed = 3;
+	planeRoll = 0; 
 	
 	
 	var img = new THREE.MeshBasicMaterial({ //CHANGED to MeshBasicMaterial
@@ -132,10 +135,7 @@ function init()
             geometry.scale.set(2, 2, 2);
             geometry.rotation.x = -0.0;
 			geometryS = geometry;
-            scene.add(geometry);
-			
-			
-			
+            scene.add(geometry);					
 			
 			//camera.position.set(0, 0, -100);
 			//geometryS.add( camera );
@@ -191,9 +191,9 @@ function animate()
 
 function update()
 {
-	geometryS.rotation.z = 0;
-	delta = clock.getDelta(); 
-	var moveDistance = 100 * delta;
+	//geometryS.rotation.z = 0;
+	delta = clock.getDelta(); 	
+	var moveDistance = 100 * delta * speed;	
 	walking = false;
 
 	if (Gamepad.supported) 
@@ -224,9 +224,9 @@ function update()
 	}
 	
 	// move forwards / backwards
-	if ( keyboard.pressed("a") ){
+	if ( keyboard.pressed("1") ){
 		camera3.remove(plane);
-		console.log("a");
+		console.log("1");
 	//	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
 	//	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 	//	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
@@ -244,8 +244,8 @@ function update()
 		geometryS.translateZ(  moveDistance );
 	}
 	
-	if ( keyboard.pressed("s") ){
-		console.log("s");
+	if ( keyboard.pressed("2") ){
+		console.log("2");
 		camera3.remove(plane);
 		currentcamera = camera2;
 		// EVENTS
@@ -258,8 +258,8 @@ function update()
 		geometryS.translateZ(  moveDistance );
 	}
 	
-	if ( keyboard.pressed("d") ){
-		console.log("d");
+	if ( keyboard.pressed("3") ){
+		console.log("3");
 		
 		
 		camera3.add(plane);
@@ -273,30 +273,76 @@ function update()
 	}
 	
 	
-	if ( keyboard.pressed("down") ){
-		geometryS.rotation.x +=0.3
+	if ( keyboard.pressed("down") ){		
+		s_x = geometryS.rotation.x;
+		s_y = geometryS.rotation.y;
+		//geometryS.rotation.x += 0.3;
+		deg = Math.atan(s_x/s_y); 	
+		//window.alert(deg); 
+		if (s_y == 0) {
+			deg = 0; 
+		}		
+		geometryS.rotation.y += Math.sin(deg) * 0.3;
+		geometryS.rotation.x += Math.cos(deg) * 0.3; 
 		geometryS.rotation.z = 0;
-		geometryS.translateZ(  moveDistance );
+		//geometryS.translateZ(  moveDistance );
 		
 	}
 	if ( keyboard.pressed("up") ){
-		geometryS.rotation.x -=0.3
+		//geometryS.rotation.x -=0.3;
+		s_x = geometryS.rotation.x;
+		s_y = geometryS.rotation.y;
+		deg = Math.atan(s_y/s_x); 
+		if (s_y == 0) {
+			deg = 0; 
+		}
+		geometryS.rotation.y -= Math.sin(deg) * 0.3;
+		geometryS.rotation.x -= Math.cos(deg) * 0.3; 
 		geometryS.rotation.z = 0;
-		geometryS.translateZ(  moveDistance );
+//		s_x = geometryS.rotation.x;
+	//	s_y = geometryS.rotation.y;
+		//geometryS.rotation.x -= s_y - s_x - 0.3;
+		//s_x = geometryS.rotation.x;
+		//geometryS.rotation.y += s_x - s_y - 0.3; 
+		//geometryS.rotation.z = 0;
+		//geometryS.translateZ(  moveDistance );
 	}
 	// rotate left/right
 	if ( keyboard.pressed("left") ){
 		geometryS.rotation.y += delta;
 		geometryS.rotation.z -= 2*delta;
-		geometryS.translateZ(  moveDistance );
-		geometryS.rotation.x =0;
+		planeRoll = geometryS.rotation.y; 
+		//geometryS.translateZ(  moveDistance );
+		//geometryS.rotation.x =0;
 	}
 		
 	if ( keyboard.pressed("right") ){
 		geometryS.rotation.y -= delta;
 		geometryS.rotation.z += 2*delta;
-		geometryS.translateZ(  moveDistance );
-		geometryS.rotation.x =0;
+		planeRoll = geometryS.rotation.y; 
+		//geometryS.translateZ(  moveDistance );
+		//geometryS.rotation.x =0;
+	}
+	// turn left
+		if ( keyboard.pressed("a") ){
+		geometryS.rotation.y += delta;		
+		//geometryS.translateZ(  moveDistance );
+		//geometryS.rotation.x =0;
+	}	
+	// turn right
+	if ( keyboard.pressed("d") ){
+		geometryS.rotation.y -= delta;		
+		//geometryS.translateZ(  moveDistance );
+		//geometryS.rotation.x =0;
+	}
+	// speed up 
+	if ( keyboard.pressed("w") ){
+		speed = speed + 1;
+		//geometryS.rotation.x =0;
+	}
+	// speed down
+	if ( keyboard.pressed("s") ){
+		speed = speed - 1;
 	}
 		
 	
