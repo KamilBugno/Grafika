@@ -49,7 +49,7 @@ This three.js demo is part of a collection at
 // MAIN
 
 // standard global variables
-var container, scene, camera, camera2, camera3, currentcamera, renderer, controls, airplaneControls, stats;
+var container, scene, camera, camera2, camera3, currentcamera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 // custom global variables
@@ -57,11 +57,12 @@ var cube;
 var geometryS;
 var plane;
 var speed;
-var planeRoll;
-var engine;
+var planeYRotation;
+//var engine;
 
 init();
-animate();
+window.setTimeout(animate,1000);
+//animate();
 
 // FUNCTIONS 		
 function init() 
@@ -71,6 +72,7 @@ function init()
 	scene = new THREE.Scene();
 	speed = 3;
 	planeRoll = 0; 
+	planeYRotation = 0; 
 
 	var settings = {
       positionStyle    : Type.CUBE,
@@ -95,14 +97,13 @@ function init()
       emitterDeathAge    : 60
      };
      
-    engine = new ParticleEngine();
-	engine.setValues( settings );
-	engine.initialize();
-	
+    //engine = new ParticleEngine();
+	//engine.setValues( settings );
+	//engine.initialize();
 	
 	
 	var img = new THREE.MeshBasicMaterial({ //CHANGED to MeshBasicMaterial
-        map:THREE.ImageUtils.loadTexture('pilot1.png'),
+        map:THREE.ImageUtils.loadTexture('cockpit.png'),
 		transparent: true
     });
     img.map.needsUpdate = true; //ADDED
@@ -134,8 +135,7 @@ function init()
 	THREEx.WindowResize(renderer, camera);
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
-	controls = new THREE.OrbitControls( camera, renderer.domElement );
-	airplaneControls = new THREE.OrbitControls(geometryS); 
+	controls = new THREE.OrbitControls( camera, renderer.domElement );	
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -144,7 +144,7 @@ function init()
 	container.appendChild( stats.domElement );
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
-	light.position.set(100,350,100);
+	light.position.set(100,350,100);	
 	scene.add(light);
 	
 	
@@ -169,6 +169,9 @@ function init()
             geometry.scale.set(2, 2, 2);
             geometry.rotation.x = -0.0;
 			geometryS = geometry;
+			geometryS.rotation.x = 0;
+			geometryS.rotation.y = 0;
+			geometryS.rotation.z = 0;
             scene.add(geometry);					
 			
 			//camera.position.set(0, 0, -100);
@@ -187,13 +190,6 @@ function init()
 			
 			
 		});
-		
-		
-	
-	
-	 
-
-    
 	
 	// SKYBOX
 	var axes = new THREE.AxisHelper(100);
@@ -212,8 +208,37 @@ function init()
 		}));
 	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
 	var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
-	scene.add( skyBox );
 	
+	scene.add( skyBox );
+}
+
+// Depreciated
+function rain()
+{       
+    var texture = THREE.ImageUtils.loadTexture("raindrop2flip.png");
+    var geom = new THREE.Geometry();
+    var material = new THREE.ParticleBasicMaterial({
+		size: 10,
+        transparent: true,
+        opacity: 0.6,
+        map: texture,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true,
+        color: 0xffffff
+    });
+    var range = 40;
+    for (var i = 0; i < 1500; i++) {
+        var particle = new THREE.Vector3(
+            Math.random() * range - range / 2,
+            Math.random() * range * 1.5,
+            Math.random() * range - range / 2);
+        particle.velocityY = 0.1 + Math.random() / 5;
+        particle.velocityX = (Math.random() - 0.5) / 3;
+        geom.vertices.push(particle);
+    }
+    cloud = new THREE.ParticleSystem(geom, material);
+    cloud.sortParticles = true;
+    scene.add(cloud);
 }
 
 function animate() 
@@ -259,8 +284,7 @@ function update()
 	
 	// move forwards / backwards
 	if ( keyboard.pressed("1") ){
-		camera3.remove(plane);
-		console.log("1");
+		camera3.remove(plane);		
 	//	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
 	//	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 	//	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
@@ -273,13 +297,9 @@ function update()
 		THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 		// CONTROLS
 		controls = new THREE.OrbitControls( currentcamera, renderer.domElement );
-		geometryS.rotation.x =0;
-		geometryS.rotation.z =0;
-		geometryS.translateZ(  moveDistance );
 	}
 	
-	if ( keyboard.pressed("2") ){
-		console.log("2");
+	if ( keyboard.pressed("2") ){		
 		camera3.remove(plane);
 		currentcamera = camera2;
 		// EVENTS
@@ -287,110 +307,73 @@ function update()
 		THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 		// CONTROLS
 		controls = new THREE.OrbitControls( currentcamera, renderer.domElement );
-		geometryS.rotation.x =0;
-		geometryS.rotation.z =0;
-		geometryS.translateZ(  moveDistance );
 	}
 	
-	if ( keyboard.pressed("3") ){
-		console.log("3");
-		
-		
+	if ( keyboard.pressed("3") ){		
 		camera3.add(plane);
 		currentcamera = camera3;
 		// EVENTS
 		THREEx.WindowResize(renderer, currentcamera);
 		THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 		// CONTROLS
-		controls = new THREE.OrbitControls( currentcamera, renderer.domElement );
-		
+		controls = new THREE.OrbitControls( currentcamera, renderer.domElement );		
 	}
 	
 	
 	if ( keyboard.pressed("down") ){		
-		s_x = geometryS.rotation.x;
-		s_y = geometryS.rotation.y;
+
 		geometryS.rotateX(-0.04);
-		//geometryS.rotation.x += 0.3;
-		//deg = Math.atan(s_x/s_y); 	
-		//window.alert(deg); 
-		//if (s_y == 0) {
-		//	deg = 0; 
-		//}				
-		//geometryS.rotation.y += Math.sin(deg) * 0.3;
-		//geometryS.rotation.x += Math.cos(deg) * 0.3; 
-		//geometryS.rotation.z = 0;
-		//geometryS.translateZ(  moveDistance );
 		
 	}
 	if ( keyboard.pressed("up") ){
-		//geometryS.rotation.x -=0.3;
-		s_x = geometryS.rotation.x;
-		s_y = geometryS.rotation.y;
+
 		geometryS.rotateX(0.04);
-//		deg = Math.atan(s_y/s_x); 
-//		if (s_y == 0) {
-//			deg = 0; 
-//		}
-//		geometryS.rotation.y -= Math.sin(deg) * 0.3;
-//		geometryS.rotation.x -= Math.cos(deg) * 0.3; 
-//		geometryS.rotation.z = 0;
-//		s_x = geometryS.rotation.x;
-	//	s_y = geometryS.rotation.y;
-		//geometryS.rotation.x -= s_y - s_x - 0.3;
-		//s_x = geometryS.rotation.x;
-		//geometryS.rotation.y += s_x - s_y - 0.3; 
-		//geometryS.rotation.z = 0;
-		//geometryS.translateZ(  moveDistance );
+
 	}
 	// rotate left/right
-
  	if ( keyboard.pressed("left") ){
- 		//geometryS.rotation.y += delta;
- 		
- 		//geometryS.rotation.z -= 2*delta;
+
+		planeYRotation += 0.0005; 		
  		geometryS.rotateZ(-0.02);
-		//geometryS.translateZ(  moveDistance );
-		
-		//geometryS.rotation.x =0;
 
  	}
 		
 	if ( keyboard.pressed("right") ){
-		//geometryS.rotation.y -= delta;
-		//geometryS.rotation.z += 2*delta;
+
+		planeYRotation -= 0.0005; 		
 		geometryS.rotateZ(0.02);
-		//planeRoll = geometryS.rotation.y; 
-		//geometryS.translateZ(  moveDistance );
-		//geometryS.rotation.x =0;
+
 	}
 	// turn left
-		if ( keyboard.pressed("a") ){
-		//geometryS.rotation.y += delta;		
+	if ( keyboard.pressed("a") ){
+	
 		geometryS.rotateY(0.025);
-		//geometryS.translateZ(  moveDistance );
-		//geometryS.rotation.x =0;
+
 	}	
 	// turn right
 	if ( keyboard.pressed("d") ){
-		//geometryS.rotation.y -= delta;		
+
 		geometryS.rotateY(-0.025);
-		//geometryS.translateZ(  moveDistance );
-		//geometryS.rotation.x =0;
+
 	}
 	// speed up 
 	if ( keyboard.pressed("w") ){
+
 		speed = speed + 1;
-		//geometryS.rotation.x =0;
+
 	}
 	// speed down
 	if ( keyboard.pressed("s") ){
-		speed = speed - 1;
-	}
 		
+		speed = speed - 1;
+		
+	}
 	
-	
-	geometryS.translateZ(  moveDistance/10 );
+	planeYRotation /= 1.1;
+	geometryS.rotateY(planeYRotation);
+	transalteSZ = moveDistance/10; 
+	geometryS.translateZ( transalteSZ );
+	//console.log(geometryS.rotation.z); 
 	controls.update();
 	stats.update();
 	
@@ -399,7 +382,7 @@ function update()
 function render() 
 {
 	renderer.render( scene, currentcamera );
-	engine.update( 0.01 * 0.5 );
+	//engine.update( 0.01 * 0.5 );
 }
 
 </script>
