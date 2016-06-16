@@ -11,6 +11,7 @@
 <script src="three.js"></script>
 <script src="Detector.js"></script>
 <script src="stats.js"></script>
+<script src="ParticleEngine.js"></script>
 <script src="OrbitControls.js"></script>
 <script src="THREEx.KeyboardState.js"></script>
 <script src="THREEx.FullScreen.js"></script>
@@ -20,6 +21,8 @@
 <script type="text/javascript" src="jquery-1.9.0.js"></script>
 <script type="text/javascript" src="stats.js"></script>
 <script type="text/javascript" src="dat.gui.js"></script>
+
+
 
 <!-- jQuery code to display an information button and box when clicked. -->
 <script src="js/gamepad.js"></script>
@@ -55,6 +58,7 @@ var geometryS;
 var plane;
 var speed;
 var planeRoll;
+var engine;
 
 init();
 animate();
@@ -62,10 +66,39 @@ animate();
 // FUNCTIONS 		
 function init() 
 {
+
 	// SCENE
 	scene = new THREE.Scene();
 	speed = 3;
 	planeRoll = 0; 
+
+	var settings = {
+      positionStyle    : Type.CUBE,
+	  positionBase     : new THREE.Vector3( 0, 0, -10 ),
+	  positionSpread   : new THREE.Vector3( 2000, 2000, 2000 ),
+ 
+      velocityStyle    : Type.CUBE,
+      velocityBase     : new THREE.Vector3( 0, -50, 0 ),
+      velocitySpread   : new THREE.Vector3( 5, 5, 0 ), 
+      accelerationBase : new THREE.Vector3( 100, 0, 0 ),
+       
+      particleTexture : THREE.ImageUtils.loadTexture( 'raindrop2flip.png' ),
+ 
+      sizeBase    : 2.9,
+      sizeSpread  : 2.9,
+      colorBase   : new THREE.Vector3(0.66, 1.0, 0.7), // H,S,L
+      colorSpread : new THREE.Vector3(0.00, 0.0, 0.2),
+      opacityBase : 0.6,
+ 
+      particlesPerSecond : 50000,
+      particleDeathAge   : 1.0,  
+      emitterDeathAge    : 60
+     };
+     
+    engine = new ParticleEngine();
+	engine.setValues( settings );
+	engine.initialize();
+	
 	
 	
 	var img = new THREE.MeshBasicMaterial({ //CHANGED to MeshBasicMaterial
@@ -308,13 +341,17 @@ function update()
 		//geometryS.translateZ(  moveDistance );
 	}
 	// rotate left/right
-	if ( keyboard.pressed("left") ){
-		geometryS.rotation.y += delta;
-		geometryS.rotation.z -= 2*delta;
-		planeRoll = geometryS.rotation.y; 
-		//geometryS.translateZ(  moveDistance );
-		//geometryS.rotation.x =0;
-	}
+
+ 	if ( keyboard.pressed("left") ){
+ 		geometryS.rotation.y += delta;
+ 		
+ 		geometryS.rotation.z -= 2*delta;
+ 		
+		geometryS.translateZ(  moveDistance );
+		
+		geometryS.rotation.x =0;
+
+ 	}
 		
 	if ( keyboard.pressed("right") ){
 		geometryS.rotation.y -= delta;
@@ -356,6 +393,7 @@ function update()
 function render() 
 {
 	renderer.render( scene, currentcamera );
+	engine.update( 0.01 * 0.5 );
 }
 
 </script>
