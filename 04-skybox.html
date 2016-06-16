@@ -49,7 +49,7 @@ This three.js demo is part of a collection at
 // MAIN
 
 // standard global variables
-var container, scene, camera, camera2, camera3, currentcamera, renderer, controls, stats;
+var container, scene, camera, camera2, camera3, currentcamera, renderer, controls, airplaneControls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 // custom global variables
@@ -135,6 +135,7 @@ function init()
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	// CONTROLS
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	airplaneControls = new THREE.OrbitControls(geometryS); 
 	// STATS
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
@@ -309,15 +310,16 @@ function update()
 	if ( keyboard.pressed("down") ){		
 		s_x = geometryS.rotation.x;
 		s_y = geometryS.rotation.y;
+		geometryS.rotateX(-0.04);
 		//geometryS.rotation.x += 0.3;
-		deg = Math.atan(s_x/s_y); 	
+		//deg = Math.atan(s_x/s_y); 	
 		//window.alert(deg); 
-		if (s_y == 0) {
-			deg = 0; 
-		}		
-		geometryS.rotation.y += Math.sin(deg) * 0.3;
-		geometryS.rotation.x += Math.cos(deg) * 0.3; 
-		geometryS.rotation.z = 0;
+		//if (s_y == 0) {
+		//	deg = 0; 
+		//}				
+		//geometryS.rotation.y += Math.sin(deg) * 0.3;
+		//geometryS.rotation.x += Math.cos(deg) * 0.3; 
+		//geometryS.rotation.z = 0;
 		//geometryS.translateZ(  moveDistance );
 		
 	}
@@ -325,13 +327,14 @@ function update()
 		//geometryS.rotation.x -=0.3;
 		s_x = geometryS.rotation.x;
 		s_y = geometryS.rotation.y;
-		deg = Math.atan(s_y/s_x); 
-		if (s_y == 0) {
-			deg = 0; 
-		}
-		geometryS.rotation.y -= Math.sin(deg) * 0.3;
-		geometryS.rotation.x -= Math.cos(deg) * 0.3; 
-		geometryS.rotation.z = 0;
+		geometryS.rotateX(0.04);
+//		deg = Math.atan(s_y/s_x); 
+//		if (s_y == 0) {
+//			deg = 0; 
+//		}
+//		geometryS.rotation.y -= Math.sin(deg) * 0.3;
+//		geometryS.rotation.x -= Math.cos(deg) * 0.3; 
+//		geometryS.rotation.z = 0;
 //		s_x = geometryS.rotation.x;
 	//	s_y = geometryS.rotation.y;
 		//geometryS.rotation.x -= s_y - s_x - 0.3;
@@ -343,32 +346,35 @@ function update()
 	// rotate left/right
 
  	if ( keyboard.pressed("left") ){
- 		geometryS.rotation.y += delta;
+ 		//geometryS.rotation.y += delta;
  		
- 		geometryS.rotation.z -= 2*delta;
- 		
-		geometryS.translateZ(  moveDistance );
+ 		//geometryS.rotation.z -= 2*delta;
+ 		geometryS.rotateZ(-0.02);
+		//geometryS.translateZ(  moveDistance );
 		
-		geometryS.rotation.x =0;
+		//geometryS.rotation.x =0;
 
  	}
 		
 	if ( keyboard.pressed("right") ){
-		geometryS.rotation.y -= delta;
-		geometryS.rotation.z += 2*delta;
-		planeRoll = geometryS.rotation.y; 
+		//geometryS.rotation.y -= delta;
+		//geometryS.rotation.z += 2*delta;
+		geometryS.rotateZ(0.02);
+		//planeRoll = geometryS.rotation.y; 
 		//geometryS.translateZ(  moveDistance );
 		//geometryS.rotation.x =0;
 	}
 	// turn left
 		if ( keyboard.pressed("a") ){
-		geometryS.rotation.y += delta;		
+		//geometryS.rotation.y += delta;		
+		geometryS.rotateY(0.025);
 		//geometryS.translateZ(  moveDistance );
 		//geometryS.rotation.x =0;
 	}	
 	// turn right
 	if ( keyboard.pressed("d") ){
-		geometryS.rotation.y -= delta;		
+		//geometryS.rotation.y -= delta;		
+		geometryS.rotateY(-0.025);
 		//geometryS.translateZ(  moveDistance );
 		//geometryS.rotation.x =0;
 	}
