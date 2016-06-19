@@ -5,23 +5,22 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link rel=stylesheet href="css/base.css"/>
+	<script src="three.js"></script>
+	<script src="Detector.js"></script>
+	<script src="stats.js"></script>
+	<script src="water-material.js"></script>
+	<script src="ParticleEngine.js"></script>
+	<script src="OrbitControls.js"></script>
+	<script src="THREEx.KeyboardState.js"></script>
+	<script src="THREEx.FullScreen.js"></script>
+	<script src="THREEx.WindowResize.js"></script>
+	<script type="text/javascript" src="three.js"></script>
+	<script type="text/javascript" src="OBJLoader.js"></script>
+	<script type="text/javascript" src="jquery-1.9.0.js"></script>
+	<script type="text/javascript" src="stats.js"></script>
+	<script type="text/javascript" src="dat.gui.js"></script>
 </head>
 <body>
-
-<script src="three.js"></script>
-<script src="Detector.js"></script>
-<script src="stats.js"></script>
-<script src="ParticleEngine.js"></script>
-<script src="OrbitControls.js"></script>
-<script src="THREEx.KeyboardState.js"></script>
-<script src="THREEx.FullScreen.js"></script>
-<script src="THREEx.WindowResize.js"></script>
-<script type="text/javascript" src="three.js"></script>
-<script type="text/javascript" src="OBJLoader.js"></script>
-<script type="text/javascript" src="jquery-1.9.0.js"></script>
-<script type="text/javascript" src="stats.js"></script>
-<script type="text/javascript" src="dat.gui.js"></script>
-
 
 
 <!-- jQuery code to display an information button and box when clicked. -->
@@ -57,11 +56,12 @@ var cube;
 var geometryS;
 var plane;
 var speed;
-var planeYRotation;
+var planeXRotation, planeYRotation, planeZRotation;
+var raycaster;
 //var engine;
 
 init();
-window.setTimeout(animate,1000);
+window.setTimeout(animate, 1000);
 //animate();
 
 // FUNCTIONS 		
@@ -70,9 +70,11 @@ function init()
 
 	// SCENE
 	scene = new THREE.Scene();
-	speed = 3;
+	speed = 10;
 	planeRoll = 0; 
-	planeYRotation = 0; 
+	planeXRotation = 0;
+	planeYRotation = 0;
+	planeZRotation = 0; 
 
 	var settings = {
       positionStyle    : Type.CUBE,
@@ -109,7 +111,7 @@ function init()
     img.map.needsUpdate = true; //ADDED
 
     // plane
-    plane = new THREE.Mesh(new THREE.PlaneGeometry(40, 20),img);
+    plane = new THREE.Mesh(new THREE.PlaneGeometry(40, 20), img);
     //scene.add(plane);
 	
 	
@@ -169,9 +171,17 @@ function init()
             geometry.scale.set(2, 2, 2);
             geometry.rotation.x = -0.0;
 			geometryS = geometry;
+			
+			// Set right plane rotation (=start)
 			geometryS.rotation.x = 0;
 			geometryS.rotation.y = 0;
 			geometryS.rotation.z = 0;
+			
+			// Set plane in the right place (=start)
+			geometryS.position.setX(0);
+			geometryS.position.setY(0);
+			geometryS.position.setZ(0);
+			
             scene.add(geometry);					
 			
 			//camera.position.set(0, 0, -100);
@@ -187,8 +197,7 @@ function init()
 			geometryS.add(camera3);
 			camera3.position.set(0, 0, -100);
 			plane.position.set( 0, 0, -20);
-			
-			
+					
 		});
 	
 	// SKYBOX
@@ -209,9 +218,56 @@ function init()
 	var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
 	var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
 	
+	//rain();
+	// WATER
+	directionalLight = new THREE.DirectionalLight(0xffffcc, 0.6);
+    directionalLight.position.set(-600, 400, 0);
+        //this.directionalLight.target.position.set(0, 0, 0);
+	directionalLight.castShadow = true;
+	directionalLight.shadowCameraNear = -100;
+	directionalLight.shadowCameraFar = 100;
+	directionalLight.shadowCameraLeft = -100;
+	directionalLight.shadowCameraRight = 100;
+	directionalLight.shadowCameraTop = 100;
+	directionalLight.shadowCameraBottom = -100;
+        //this.directionalLight.shadowCameraVisible = true;
+	directionalLight.shadowMapWidth = 2048;
+	directionalLight.shadowMapHeight = 2048;
+	directionalLight.shadowDarkness = 0.3;
+	scene.add(directionalLight);
+	//water();
+	
 	scene.add( skyBox );
+	
+	// RAYCASTING
+	raycaster = new THREE.Raycaster();
 }
 
+function water() 
+{
+        // Load textures
+        var waterNormals = new THREE.ImageUtils.loadTexture('waternormals.jpg');
+        waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+
+        // Create the water effect
+        ms_Water = new THREE.Water(renderer, currentcamera, scene, {
+            textureWidth: 512,
+            textureHeight: 512,
+            waterNormals: waterNormals,
+            alpha: 1.0,
+            sunDirection: new THREE.Vector3(0, 0, 0).copy(directionalLight.position.normalize()),
+            sunColor: 0xffffff,
+            waterColor: 0x001e0f,
+            distortionScale: 50.0
+        });
+        var aMeshMirror = new THREE.Mesh(
+            new THREE.PlaneBufferGeometry(2000 * 500, 2000 * 500, 10, 10),
+            ms_Water.material
+        );
+        aMeshMirror.add(ms_Water);
+        aMeshMirror.rotation.x = -Math.PI * 0.5;
+        scene.add(aMeshMirror);
+}
 // Depreciated
 function rain()
 {       
@@ -244,8 +300,19 @@ function rain()
 function animate() 
 {
     requestAnimationFrame( animate );
-	render();		
-	update();
+	render();	
+	var planePosition = geometryS.position; 
+	//console.log(planePosition); 
+	x_pos = Math.abs(planePosition.x);
+	y_pos = Math.abs(planePosition.y);
+	z_pos = Math.abs(planePosition.z);
+		
+	if (x_pos < 5000 && y_pos < 5000 && z_pos < 5000) {
+		update();
+	} else {
+		//alert("You destroyed your airplane!"); 
+		restart();
+	}
 }
 
 function update()
@@ -322,38 +389,46 @@ function update()
 	
 	if ( keyboard.pressed("down") ){		
 
-		geometryS.rotateX(-0.04);
+		geometryS.rotateX(-0.01);	
+		planeXRotation -= 0.0025; 		
+		speed -= 0.1;
 		
 	}
 	if ( keyboard.pressed("up") ){
-
-		geometryS.rotateX(0.04);
+	
+		geometryS.rotateX(0.01);
+		planeXRotation += 0.0025; 		
+		speed += 0.08;
 
 	}
 	// rotate left/right
  	if ( keyboard.pressed("left") ){
 
 		planeYRotation += 0.0005; 		
- 		geometryS.rotateZ(-0.02);
+		planeZRotation -= 0.005; 		
+ 		geometryS.rotateZ(-0.01);
 
  	}
 		
 	if ( keyboard.pressed("right") ){
 
-		planeYRotation -= 0.0005; 		
-		geometryS.rotateZ(0.02);
+		planeYRotation -= 0.0005; 
+		planeZRotation += 0.005; 				
+		geometryS.rotateZ(0.01);
 
 	}
 	// turn left
 	if ( keyboard.pressed("a") ){
 	
-		geometryS.rotateY(0.025);
+		geometryS.rotateY(0.015);
+		planeYRotation += 0.0025; 
 
 	}	
 	// turn right
 	if ( keyboard.pressed("d") ){
 
-		geometryS.rotateY(-0.025);
+		geometryS.rotateY(-0.015);
+		planeYRotation -= 0.0025; 
 
 	}
 	// speed up 
@@ -369,8 +444,15 @@ function update()
 		
 	}
 	
+	// Rotation - shadow 
+	planeXRotation /= 1.1; 
 	planeYRotation /= 1.1;
+	planeZRotation /= 1.1; 
+	geometryS.rotateX(planeXRotation);
 	geometryS.rotateY(planeYRotation);
+	geometryS.rotateZ(planeZRotation);
+	
+	// Move aircraft. 
 	transalteSZ = moveDistance/10; 
 	geometryS.translateZ( transalteSZ );
 	//console.log(geometryS.rotation.z); 
@@ -383,6 +465,31 @@ function render()
 {
 	renderer.render( scene, currentcamera );
 	//engine.update( 0.01 * 0.5 );
+}
+
+function restart() {
+    var x;
+    if (confirm("You destroyed your airplane! \n Would you like to restart the game?") == true) {   
+			controls.update(); 
+			speed = 10; 
+			planeXRotation = 0;
+			planeYRotation = 0;
+			planeZRotation = 0;
+			keyboard = new THREEx.KeyboardState();
+			
+			// Set right plane rotation (=start)
+			geometryS.rotation.x = 0;
+			geometryS.rotation.y = 0;
+			geometryS.rotation.z = 0;
+			
+			// Set plane in the right place (=start)
+			geometryS.position.setX(0);
+			geometryS.position.setY(0);
+			geometryS.position.setZ(0);
+    } else {
+        alert("Thank you!"); 
+    }
+    //document.getElementById("demo").innerHTML = x;
 }
 
 </script>
