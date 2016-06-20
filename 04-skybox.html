@@ -19,15 +19,23 @@
 	<script type="text/javascript" src="jquery-1.9.0.js"></script>
 	<script type="text/javascript" src="stats.js"></script>
 	<script type="text/javascript" src="dat.gui.js"></script>
+	<!-- Importing jQuery library -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+	<!-- Importing the FlightIndicators library -->
+	<script src="js/jquery.flightindicators.js"></script>
+	<!-- Flight Indicators library styles -->
+    <link rel="stylesheet" type="text/css" href="css/flightindicators.css" />
+	<script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/CSS3DRenderer.js"></script>
 </head>
 <body>
-
+    
+        <!-- The block where we want to place an indicator -->
+        <!--<span id="first_attitude"></span>-->
+    
 
 <!-- jQuery code to display an information button and box when clicked. -->
 <script src="js/gamepad.js"></script>
-<script src="jquery-1.9.1.js"></script>
-<script src="jquery-ui.js"></script>
-<link rel=stylesheet href="jquery-ui.css" />
+
 <link rel=stylesheet href="info.css"/>
 <script src="info.js"></script>
 
@@ -38,6 +46,12 @@ This three.js demo is part of a collection at
 <!-- ------------------------------------------------------------ -->
 
 <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+
+YOLO:
+    <span style="position: fixed; bottom:0%; left:15%" id="airspeed"></span>                
+	<span style="position: fixed; bottom:0%; left:36%" id="attitude"></span>      
+	<span style="position: fixed; bottom:0%; left:57%" id="altimeter"></span>  
+    <span style="position: fixed; bottom:0%; left:78%" id="heading"></span>            
 <script>
 /*
 	Three.js "tutorials by example"
@@ -57,7 +71,15 @@ var geometryS;
 var plane;
 var speed;
 var planeXRotation, planeYRotation, planeZRotation;
+var planeXRotAdd, planeYRotAdd, planeZRotAdd; 
 var raycaster;
+// GYRO 
+// First static example
+var airspeed = $.flightIndicator('#airspeed', 'airspeed', {showBox: false});
+var heading = $.flightIndicator('#heading', 'heading', {heading:150, showBox:true});
+var attitude = $.flightIndicator('#attitude', 'attitude', {roll:50, pitch:-20, size:200, showBox : true});
+var altimeter = $.flightIndicator('#altimeter', 'altimeter');
+
 //var engine;
 
 init();
@@ -75,6 +97,17 @@ function init()
 	planeXRotation = 0;
 	planeYRotation = 0;
 	planeZRotation = 0; 
+	planeXRotAdd = 0; 
+	planeYRotAdd = 0; 
+	planeZRotAdd = 0; 
+	
+	// GYRO
+	attitude = $.flightIndicator('#attitude', 'attitude', {roll:50, pitch:-20, size:200, showBox : true});
+	heading = $.flightIndicator('#heading', 'heading', {heading:150, showBox:true});
+	variometer = $.flightIndicator('#variometer', 'variometer', {vario:-5, showBox:true});
+	airspeed = $.flightIndicator('#airspeed', 'airspeed', {showBox: false});
+	altimeter = $.flightIndicator('#altimeter', 'altimeter');
+	
 
 	var settings = {
       positionStyle    : Type.CUBE,
@@ -190,7 +223,7 @@ function init()
 			var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 			camera2 = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 			camera2.position.set(0, 0, -100);
-			geometryS.add( camera2 );
+			geometryS.add( camera2 );			
 			
 			
 			camera3 = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
@@ -241,6 +274,7 @@ function init()
 	
 	// RAYCASTING
 	raycaster = new THREE.Raycaster();
+	
 }
 
 function water() 
@@ -390,7 +424,8 @@ function update()
 	if ( keyboard.pressed("down") ){		
 
 		geometryS.rotateX(-0.01);	
-		planeXRotation -= 0.0025; 		
+		planeXRotation -= 0.0025; 	
+		planeXRotAdd -= 0.0025; 	
 		speed -= 0.1;
 		
 	}
@@ -398,14 +433,17 @@ function update()
 	
 		geometryS.rotateX(0.01);
 		planeXRotation += 0.0025; 		
+		planeXRotAdd += 0.0025; 	
 		speed += 0.08;
 
 	}
 	// rotate left/right
  	if ( keyboard.pressed("left") ){
 
-		planeYRotation += 0.0005; 		
-		planeZRotation -= 0.005; 		
+		planeYRotation += 0.0005; 
+		planeYRotAdd += 0.0005; 
+		planeZRotation -= 0.005; 
+		planeZRotAdd -= 0.005; 
  		geometryS.rotateZ(-0.01);
 
  	}
@@ -413,7 +451,9 @@ function update()
 	if ( keyboard.pressed("right") ){
 
 		planeYRotation -= 0.0005; 
-		planeZRotation += 0.005; 				
+		planeYRotAdd -= 0.0005; 
+		planeZRotation += 0.005; 
+		planeZRotAdd += 0.005; 
 		geometryS.rotateZ(0.01);
 
 	}
@@ -422,6 +462,7 @@ function update()
 	
 		geometryS.rotateY(0.015);
 		planeYRotation += 0.0025; 
+		planeYRotAdd += 0.0025; 
 
 	}	
 	// turn right
@@ -429,6 +470,7 @@ function update()
 
 		geometryS.rotateY(-0.015);
 		planeYRotation -= 0.0025; 
+		planeYRotAdd -= 0.0025; 
 
 	}
 	// speed up 
@@ -444,10 +486,29 @@ function update()
 		
 	}
 	
+	// Airspeed update 
+	airspeed.setAirSpeed(speed*5);
+	// Attitude update
+    attitude.setRoll(- planeZRotAdd * 62);
+    attitude.setPitch(- planeXRotAdd * 72);
+	
+	// Altimeter update
+	var planePosition = geometryS.position; 
+	x_pos = Math.abs(planePosition.x);
+	y_pos = Math.abs(planePosition.y);
+	z_pos = Math.abs(planePosition.z);
+    altimeter.setAltitude(y_pos);
+    altimeter.setPressure(1013 - 0.00115 * y_pos);   
+    // Heading update
+    heading.setHeading((planeYRotAdd * 85 + 180));
+	
 	// Rotation - shadow 
 	planeXRotation /= 1.1; 
+	planeXRotAdd += planeXRotation;
 	planeYRotation /= 1.1;
+	planeYRotAdd += planeYRotation; 
 	planeZRotation /= 1.1; 
+	planeZRotAdd += planeZRotation; 
 	geometryS.rotateX(planeXRotation);
 	geometryS.rotateY(planeYRotation);
 	geometryS.rotateZ(planeZRotation);
@@ -459,11 +520,43 @@ function update()
 	controls.update();
 	stats.update();
 	
+	// UPDATE PANELS
+	// Update at 20Hz
+//	var increment = 0;
+//	setInterval(function() {
+//		// Airspeed update
+//		airspeed.setAirSpeed(80+80*Math.sin(increment/10));
+
+		// Heading update
+//		heading.setHeading(increment);    
+//	}, 50);  
+	
+	
 }
 
 function render() 
 {
+	
 	renderer.render( scene, currentcamera );
+
+	//var number = document.createElement( 'span' );
+	//number.id = "first_attitude";	
+	//number = first_attitude; 
+	//var object = new THREE.CSS3DObject( number );
+	//console.log(number);
+	//scene.add(object);
+  
+	//var CSSrenderer = new THREE.CSS3DRenderer();
+	//CSSrenderer.setSize(window.innerWidth, window.innerHeight);
+
+	//document.body.appendChild(CSSrenderer.domElement);
+
+  
+	//document.getElementById('myDiv').innerHTML = '<span id="first_attitude"></span>';
+	//console.log(document.getElementById('myDiv')); 
+	//var span = document.getElementById("first_attitude");	
+	//scene.add(span);
+	//console.log(span); 
 	//engine.update( 0.01 * 0.5 );
 }
 
@@ -492,7 +585,7 @@ function restart() {
     //document.getElementById("demo").innerHTML = x;
 }
 
-</script>
-
+</script>              
+		
 </body>
 </html>
