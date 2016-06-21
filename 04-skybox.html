@@ -1,10 +1,9 @@
-<!doctype html>
 <html lang="en">
 <head>
 	<title>Skybox (Three.js). Example 04 04</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<link rel=stylesheet href="css/base.css"/>
+	
 	<script src="three.js"></script>
 	<script src="Detector.js"></script>
 	<script src="stats.js"></script>
@@ -25,19 +24,14 @@
 	<script src="js/jquery.flightindicators.js"></script>
 	<!-- Flight Indicators library styles -->
     <link rel="stylesheet" type="text/css" href="css/flightindicators.css" />
+	<link rel=stylesheet href="info.css"/>
+	<script src="info.js"></script>
 	<script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/CSS3DRenderer.js"></script>
 </head>
 <body>
     
         <!-- The block where we want to place an indicator -->
-        <!--<span id="first_attitude"></span>-->
-    
-
-<!-- jQuery code to display an information button and box when clicked. -->
-<script src="js/gamepad.js"></script>
-
-<link rel=stylesheet href="info.css"/>
-<script src="info.js"></script>
+        <!--<span id="first_attitude"></span>-->  
 
 <div id="infoBox" title="Demo Information">
 This three.js demo is part of a collection at
@@ -67,7 +61,7 @@ var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 // custom global variables
 var cube;
-var geometryS;
+var geometryS = new THREE.Object3D();
 var plane;
 var speed;
 var planeXRotation, planeYRotation, planeZRotation;
@@ -79,17 +73,18 @@ var airspeed = $.flightIndicator('#airspeed', 'airspeed', {showBox: false});
 var heading = $.flightIndicator('#heading', 'heading', {heading:150, showBox:true});
 var attitude = $.flightIndicator('#attitude', 'attitude', {roll:50, pitch:-20, size:200, showBox : true});
 var altimeter = $.flightIndicator('#altimeter', 'altimeter');
-
 //var engine;
 
 init();
-window.setTimeout(animate, 1000);
-//animate();
+geometryS.position.set(0, 0, 0);
+//window.setTimeout(animate, 1000);
+animate();
 
 // FUNCTIONS 		
 function init() 
 {
 
+	//console.log("MACIEJJJ"); 
 	// SCENE
 	scene = new THREE.Scene();
 	speed = 10;
@@ -188,6 +183,9 @@ function init()
         var mesh;
 
         var loader = new THREE.OBJLoader();
+		//http://www.filedropper.com/b-747
+		//http://u.mobiltur.pl/pobierz.php?nazwa=B-747.obj
+		//'B-747.obj'
         loader.load('B-747.obj', function (geometry) {
             var material = new THREE.MeshLambertMaterial({color: 0x5C3A21});
 
@@ -202,7 +200,7 @@ function init()
 
             mesh = geometry;
             geometry.scale.set(2, 2, 2);
-            geometry.rotation.x = -0.0;
+            geometry.rotation.x = -0.0;			
 			geometryS = geometry;
 			
 			// Set right plane rotation (=start)
@@ -232,7 +230,8 @@ function init()
 			plane.position.set( 0, 0, -20);
 					
 		});
-	
+	console.log("=========================================="); 
+
 	// SKYBOX
 	var axes = new THREE.AxisHelper(100);
 	scene.add( axes );
@@ -423,55 +422,93 @@ function update()
 	
 	if ( keyboard.pressed("down") ){		
 
+		var rotationYB = geometryS.rotation.y; 
+		var rotationZB = geometryS.rotation.z; 
 		geometryS.rotateX(-0.01);	
 		planeXRotation -= 0.0025; 	
 		planeXRotAdd -= 0.0025; 	
 		speed -= 0.1;
 		
+		var rotationYA = geometryS.rotation.y; 
+		var rotationZA = geometryS.rotation.z; 
+		
+		//planeYRotAdd += rotationYA - rotationYB;
+		//planeZRotAdd += rotationZA - rotationZB;
 	}
 	if ( keyboard.pressed("up") ){
 	
+		var rotationYB = geometryS.rotation.y; 
+		var rotationZB = geometryS.rotation.z; 
 		geometryS.rotateX(0.01);
 		planeXRotation += 0.0025; 		
 		planeXRotAdd += 0.0025; 	
 		speed += 0.08;
 
+		var rotationYA = geometryS.rotation.y; 
+		var rotationZA = geometryS.rotation.z; 
+		
+		//planeYRotAdd += rotationYA - rotationYB;
+		//planeZRotAdd += rotationZA - rotationZB;
 	}
 	// rotate left/right
  	if ( keyboard.pressed("left") ){
 
+		var rotationXB = geometryS.rotation.x; 
+		
 		planeYRotation += 0.0005; 
 		planeYRotAdd += 0.0005; 
 		planeZRotation -= 0.005; 
 		planeZRotAdd -= 0.005; 
  		geometryS.rotateZ(-0.01);
 
+		var rotationXA = geometryS.rotation.x; 
+		
+		//planeXRotAdd += rotationXA - rotationXB;	
  	}
 		
 	if ( keyboard.pressed("right") ){
 
+		var rotationXB = geometryS.rotation.x; 
+		
 		planeYRotation -= 0.0005; 
 		planeYRotAdd -= 0.0005; 
 		planeZRotation += 0.005; 
 		planeZRotAdd += 0.005; 
 		geometryS.rotateZ(0.01);
+		
+		var rotationXA = geometryS.rotation.x; 
+		
+		//planeXRotAdd += rotationXA - rotationXB;		
 
 	}
 	// turn left
 	if ( keyboard.pressed("a") ){
 	
+		var rotationXB = geometryS.rotation.x; 
+		var rotationZB = geometryS.rotation.z; 
 		geometryS.rotateY(0.015);
+		var rotationXA = geometryS.rotation.x; 
+		var rotationZA = geometryS.rotation.z; 
 		planeYRotation += 0.0025; 
 		planeYRotAdd += 0.0025; 
+		
+		//planeXRotAdd += rotationXA - rotationXB;
+		//planeZRotAdd += rotationZA - rotationZB;
 
 	}	
 	// turn right
 	if ( keyboard.pressed("d") ){
 
+		var rotationXB = geometryS.rotation.x; 
+		var rotationZB = geometryS.rotation.z; 
 		geometryS.rotateY(-0.015);
+		var rotationXA = geometryS.rotation.x; 
+		var rotationZA = geometryS.rotation.z; 
 		planeYRotation -= 0.0025; 
 		planeYRotAdd -= 0.0025; 
-
+		
+		//planeXRotAdd += rotationXA - rotationXB;
+		//planeZRotAdd += rotationZA - rotationZB;
 	}
 	// speed up 
 	if ( keyboard.pressed("w") ){
@@ -497,7 +534,7 @@ function update()
 	x_pos = Math.abs(planePosition.x);
 	y_pos = Math.abs(planePosition.y);
 	z_pos = Math.abs(planePosition.z);
-    altimeter.setAltitude(y_pos);
+    altimeter.setAltitude(planePosition.y + 5000);
     altimeter.setPressure(1013 - 0.00115 * y_pos);   
     // Heading update
     heading.setHeading((planeYRotAdd * 85 + 180));
@@ -536,7 +573,7 @@ function update()
 
 function render() 
 {
-	
+
 	renderer.render( scene, currentcamera );
 
 	//var number = document.createElement( 'span' );
